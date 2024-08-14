@@ -21,7 +21,10 @@ def home(request):
 
         try:
             L.login(username, password)
-            L.save_session_to_file()
+            
+            session_directory = f"{os.getcwd()}/static/"
+            session_file = os.path.join(session_directory, f"{username}")
+            L.save_session_to_file(session_file)
 
             print("Logged in successfully!")
 
@@ -36,7 +39,7 @@ def home(request):
             request.session['followees'] = profile.followees
             request.session['bio'] = profile.biography
             request.session['profile_pic_url'] = profile.profile_pic_url
-
+            request.session['session_file'] = session_file
 
 
             response = requests.get(profile.profile_pic_url)
@@ -65,7 +68,8 @@ def home(request):
 def user_dashboard(request):
 
     L = instaloader.Instaloader()
-
+    L.load_session_from_file(f"{request.session.get('logged_user')}", request.session.get('session_file'))
+    
     if request.session.get("is_user_logged_in") == False:
         return HttpResponse("User is not logged in")
 
@@ -96,7 +100,7 @@ def logout(request):
 
 def search(request):
     L = instaloader.Instaloader()
-    L.load_session_from_file(f"{request.session.get('logged_user')}")
+    L.load_session_from_file(f"{request.session.get('logged_user')}", request.session.get('session_file'))
 
     if request.session.get("is_user_logged_in") == False:
         return HttpResponse("User is not logged in")
